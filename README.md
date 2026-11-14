@@ -152,5 +152,5 @@ If you want to restore the official Netflix app later:
 
 ## References & Prior Art
 
-* **XDA Developers Forums:** Community discussions on non-root Android TV package manipulation and intent redirection for hardware remote shortcut keys.
+* **XDA Developers Forums (`yani2000`, Dec 2020):** [[APP][NOROOT/NOADS][AndroidTV][5.0+] Prime Video / Netflix / Spotify / orthers Button Mapper](https://xdaforums.com/t/app-noroot-noads-androidtv-5-0-prime-video-netflix-spotify-orthers-button-mapper.4203823/) — Early community implementation demonstrating no-root Android TV remote button interception via package-name substitution (`com.netflix.ninja`) without Accessibility services.
 * **Android Developers Documentation:** [Activity Lifecycle](https://developer.android.com/guide/components/activities/activity-lifecycle) and [Manifest Activity Styles](https://developer.android.com/reference/android/R.style#Theme_NoDisplay) (`Theme.NoDisplay`).
