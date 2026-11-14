@@ -2,19 +2,27 @@
 
 > **DISCLAIMER:** This software and documentation are provided **"AS IS"**, without warranty of any kind, express or implied. You are solely responsible for any modifications made to your device. The authors and contributors are not responsible for any device issues, app incompatibilities, account problems, or unintended behavior resulting from the use of this project. Proceed at your own risk.
 
-Builds and sideloads a zero-permission, zero-daemon dummy `com.netflix.ninja` APK (`Theme.NoDisplay` + immediate `finish()`). When the physical Netflix button is pressed on the Shield remote (sending `KEYCODE_BUTTON_12` on the 2019 remote), Shield OS resolves the button press into an intent to launch `com.netflix.ninja`. Android launches this invisible activity, exits in milliseconds, and suppresses the Google Play Store redirect without requiring Accessibility services, disabling the Google Play Store, or hooking specific keycodes.
+Builds and sideloads a zero-permission, zero-daemon dummy `com.netflix.ninja` APK that intercepts the Shield remote's Netflix button at the Android package-resolution layer. Instead of opening Netflix or redirecting to the Google Play Store, the button launches an invisible activity that terminates immediately (`Theme.NoDisplay` + `finish()`), leaving your current video or game uninterrupted.
 
-## How It Works & Where Alternatives Intercept
+## How It Works (Under the Hood)
 
-When the Netflix button is pressed, Shield OS translates the hardware keycode into a package launch intent before any app sees it:
+When you press the physical Netflix button on the Shield remote, the firmware does not hardcode a direct jump to the Play Store. Instead, Shield OS runs a standard Android package launch sequence:
+
+1. **Keycode to Package Mapping:** The remote sends a hardware keycode (`KEYCODE_BUTTON_12` on the 2019 Shield remote). Shield OS's `PhoneWindowManager` intercepts this keycode at the system level before any foreground app sees it and looks up the launch intent for package `com.netflix.ninja` via `PackageManager.getLaunchIntentForPackage("com.netflix.ninja")`.
+2. **Manifest Intent Resolution:** Android's `PackageManager` inspects the installed `com.netflix.ninja` package's `AndroidManifest.xml` for an exported `<activity>` declaring `android.intent.action.MAIN` with category `LAUNCHER` or `LEANBACK_LAUNCHER`.
+   * **If no matching package is installed (or it is disabled):** Shield OS falls back to firing an implicit `market://details?id=com.netflix.ninja` intent, which opens the Google Play Store install page.
+   * **If this dummy APK is installed:** `PackageManager` resolves the intent to `.MainActivity` inside our stub package, and Android's `ActivityManager` starts that activity.
+3. **Zero-UI Execution & Immediate Teardown:**
+   * `AndroidManifest.xml` applies `android:theme="@android:style/Theme.NoDisplay"` along with `excludeFromRecents="true"` and `noHistory="true"`. Because of `Theme.NoDisplay`, Android never allocates a window surface, draws a frame, or steals visual focus from your active media player or game.
+   * Inside `MainActivity.onCreate()`, the app executes a single call (`finish()`) and returns immediately. Android destroys the activity before `onResume()` or window rendering ever occurs, leaving zero background services or lingering processes in memory.
 
 ```mermaid
 flowchart TD
     A[Physical Netflix Button Press<br/>e.g. KEYCODE_BUTTON_12] --> B["Input Driver & Keylayout<br/>(/system/usr/keylayout/*.kl)"]
     B -->|"[3] Root Keylayout Edit<br/>Remaps or drops keycode"| C[Shield OS PhoneWindowManager]
-    C -->|"[2] Accessibility Service<br/>Intercepts key event in daemon"| D[Package Launch Intent<br/>com.netflix.ninja]
-    D --> E{Is com.netflix.ninja<br/>installed?}
-    E -->|"[4] THIS DUMMY APK<br/>Invisible activity runs finish() in <1ms"| F[Immediate Exit<br/>Playback continues uninterrupted]
+    C -->|"[2] Accessibility Service<br/>Intercepts key event in daemon"| D["PackageManager Lookup<br/>getLaunchIntentForPackage('com.netflix.ninja')"]
+    D --> E{Is com.netflix.ninja<br/>installed & enabled?}
+    E -->|"[4] THIS DUMMY APK<br/>Manifest MAIN/LEANBACK_LAUNCHER<br/>NoDisplay Activity calls finish() in onCreate()"| F[Immediate Activity Teardown<br/>No window drawn, playback uninterrupted]
     E -->|No / Disabled| G[Play Store Fallback Intent<br/>market://details?id=com.netflix.ninja]
     G -->|"[1] Disable Play Store<br/>Breaks updates & licensing"| H[Google Play Store<br/>Netflix Install Page]
 ```
