@@ -18,7 +18,6 @@ When you press the physical Netflix button on the Shield remote, the firmware do
 
 
 ```mermaid
-flowchart
     A[Physical Netflix Button Press<br/>e.g. KEYCODE_BUTTON_12] --> B["Input Driver & Keylayout<br/>(/system/usr/keylayout/*.kl)"]
     B -->|"[3] Root Keylayout Edit<br/>Remaps or drops keycode"| C[Shield OS PhoneWindowManager]
     C -->|"[2] Accessibility Service<br/>Intercepts key event in daemon"| D["PackageManager Lookup<br/>getLaunchIntentForPackage('com.netflix.ninja')"]
