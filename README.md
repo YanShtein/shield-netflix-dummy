@@ -16,6 +16,7 @@ When you press the physical Netflix button on the Shield remote, the firmware do
    * `AndroidManifest.xml` applies `android:theme="@android:style/Theme.NoDisplay"` along with `excludeFromRecents="true"` and `noHistory="true"`. Because of `Theme.NoDisplay`, Android never allocates a window surface, draws a frame, or steals visual focus from your active media player or game.
    * Inside `MainActivity.onCreate()`, the app executes a single call (`finish()`) and returns immediately. Android destroys the activity before `onResume()` or window rendering ever occurs, leaving zero background services or lingering processes in memory.
 
+
 ```mermaid
 flowchart TD
     A[Physical Netflix Button Press<br/>e.g. KEYCODE_BUTTON_12] --> B["Input Driver & Keylayout<br/>(/system/usr/keylayout/*.kl)"]
@@ -26,6 +27,7 @@ flowchart TD
     E -->|No / Disabled| G[Play Store Fallback Intent<br/>market://details?id=com.netflix.ninja]
     G -->|"[1] Disable Play Store<br/>Breaks updates & licensing"| H[Google Play Store<br/>Netflix Install Page]
 ```
+
 
 ## Why This Approach? (Motivation & Alternatives)
 
