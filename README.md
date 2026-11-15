@@ -17,16 +17,14 @@ When you press the physical Netflix button on the Shield remote, the firmware do
    * Inside `MainActivity.onCreate()`, the app executes a single call (`finish()`) and returns immediately. Android destroys the activity before `onResume()` or window rendering ever occurs, leaving zero background services or lingering processes in memory.
 
 
-```mermaid
 flowchart TD
-    A -->|"Physical Netflix Button Press<br/>e.g. KEYCODE_BUTTON_12" --> B["Input Driver & Keylayout<br/>(/system/usr/keylayout/*.kl)"]
+    A[Physical Netflix Button Press<br/>e.g. KEYCODE_BUTTON_12] --> B["Input Driver &amp; Keylayout<br/>(/system/usr/keylayout/*.kl)"]
     B -->|"[3] Root Keylayout Edit<br/>Remaps or drops keycode"| C[Shield OS PhoneWindowManager]
     C -->|"[2] Accessibility Service<br/>Intercepts key event in daemon"| D["PackageManager Lookup<br/>getLaunchIntentForPackage('com.netflix.ninja')"]
     D --> E{Is com.netflix.ninja<br/>installed & enabled?}
     E -->|"[4] THIS DUMMY APK<br/>Manifest MAIN/LEANBACK_LAUNCHER<br/>NoDisplay Activity calls finish() in onCreate()"| F[Immediate Activity Teardown<br/>No window drawn, playback uninterrupted]
-    E -->|No / Disabled| G[Play Store Fallback Intent<br/>market://details?id=com.netflix.ninja]
-    G -->|"[1] Disable Play Store<br/>Breaks updates & licensing"| H[Google Play Store<br/>Netflix Install Page]
-```
+    E -->|No / Disabled| G["Play Store Fallback Intent<br/>market://details?id=com.netflix.ninja"]
+    G -->|"[1] Disable Play Store<br/>Breaks updates &amp; licensing"| H[Google Play Store<br/>Netflix Install Page]
 
 
 ## Why This Approach? (Motivation & Alternatives)
