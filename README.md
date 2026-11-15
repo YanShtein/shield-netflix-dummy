@@ -17,6 +17,7 @@ When you press the physical Netflix button on the Shield remote, the firmware do
    * Inside `MainActivity.onCreate()`, the app executes a single call (`finish()`) and returns immediately. Android destroys the activity before `onResume()` or window rendering ever occurs, leaving zero background services or lingering processes in memory.
 
 
+```mermaid
 flowchart TD
     A[Physical Netflix Button Press<br/>e.g. KEYCODE_BUTTON_12] --> B["Input Driver &amp; Keylayout<br/>(/system/usr/keylayout/*.kl)"]
     B -->|"[3] Root Keylayout Edit<br/>Remaps or drops keycode"| C[Shield OS PhoneWindowManager]
